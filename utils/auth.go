@@ -3,6 +3,8 @@ package utils
 import (
 	m "auth/models"
 	"fmt"
+	"math/rand"
+	"strconv"
 )
 
 // Fungsi cek email sudah ada apa belom
@@ -25,4 +27,16 @@ func FindUserByEmail(email string) *m.User {
 		}
 	}
 	return nil
+}
+
+func GenerateOTP() int {
+	result := 0
+	for {
+		randomNumber := rand.Intn(9999)
+		if len(strconv.Itoa(randomNumber)) == 4 {
+			result = randomNumber
+			break
+		}
+	}
+	return result
 }

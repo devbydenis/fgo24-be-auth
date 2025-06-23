@@ -3,17 +3,17 @@ package controller
 import (
 	m "auth/models"
 	u "auth/utils"
-	"net/http"
 	"fmt"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
 
 func RegisterHandler(ctx *gin.Context) {
 	var req m.RegisterRequest
-	ctx.ShouldBind(&req)
+	err := ctx.ShouldBindJSON(&req)  // hanya untuk content-type json
 
-	if req.Username == "" || req.Email == "" || req.Password == "" {
+	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"error": "Format JSON tidak valid",
 		})
@@ -89,19 +89,21 @@ func RegisterHandler(ctx *gin.Context) {
 
 func LoginHandler(ctx *gin.Context) {
 	var req m.LoginRequest
-	// ctx.ShouldBind(&req)
+	// ctx.ShouldBind(&req) // should bind bisa menerima content type aja secara dinamis
+	err := ctx.ShouldBindJSON(&req); 
 	
 	fmt.Println("Email", req.Email)
 	fmt.Println("Password", req.Password)
-
-	if err := ctx.ShouldBind(&req); err != nil {
+	
+	// validasi kalo format yang kita masukin bukan json
+	if  err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"error": "Format JSON tidak valid",
 		})
 		return
 	}
 
-	// Validasi input kosong
+	// validasi input kosong
 	if req.Email == "" {
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"error": "Email tidak boleh kosong",
@@ -141,5 +143,23 @@ func LoginHandler(ctx *gin.Context) {
 			"username": user.Username,
 			"email":    user.Email,
 		},
+	})
+}
+
+func ForgotPasswordHandler(ctx *gin.Context) {
+	var req m.ForgotPasswordRequest
+	ctx.ShouldBindJSON(&req)
+	
+	if !u.EmailExists(req.Email) {
+		ctx.JSON(http.StatusNotFound, gin.H{
+			"error": "Email tidak ditemukan, Pastikan email yang anda masukkan benar",
+		})
+		return
+	}
+	
+	otp := u.GenerateOTP()
+	ctx.JSON(http.StatusOK, gin.H{
+		"message": "OTP berhasil dikirim",
+		"otp": otp,
 	})
 }
