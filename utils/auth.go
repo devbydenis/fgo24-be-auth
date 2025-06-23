@@ -2,7 +2,6 @@ package utils
 
 import (
 	m "auth/models"
-	"fmt"
 	"math/rand"
 	"strconv"
 )
@@ -19,7 +18,7 @@ func EmailExists(email string) bool {
 
 // Fungsi cari user berdasarkan email
 func FindUserByEmail(email string) *m.User {
-	fmt.Println(m.Users)
+	// fmt.Println(m.Users)
 
 	for i, user := range m.Users {
 		if user.Email == email {
@@ -39,4 +38,11 @@ func GenerateOTP() int {
 		}
 	}
 	return result
+}
+
+func UpdateUserPassword(requestEmail, newPassword string) {
+	user := FindUserByEmail(requestEmail)
+	if user != nil {
+		user.Password = newPassword
+	}
 }

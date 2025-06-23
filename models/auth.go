@@ -14,3 +14,10 @@ type LoginRequest struct {
 type ForgotPasswordRequest struct {
 	Email string `json:"email"`
 }
+
+type ResetPasswordRequest struct {
+	Email    string `json:"email"`
+	Otp      string `json:"otp"`
+	NewPassword string `json:"new_password"`
+	ConfirmPassword string `json:"confirm_password"`
+}

@@ -3,6 +3,8 @@ package controller
 import (
 	m "auth/models"
 	u "auth/utils"
+	"strconv"
+
 	"fmt"
 	"net/http"
 
@@ -158,8 +160,57 @@ func ForgotPasswordHandler(ctx *gin.Context) {
 	}
 	
 	otp := u.GenerateOTP()
+	m.UserOTP = otp
 	ctx.JSON(http.StatusOK, gin.H{
 		"message": "OTP berhasil dikirim",
 		"otp": otp,
 	})
+}
+
+func ResetPasswordHandler(ctx *gin.Context) {
+	var req m.ResetPasswordRequest
+	ctx.ShouldBindJSON(&req)
+	
+	if !u.EmailExists(req.Email) {
+		ctx.JSON(http.StatusNotFound, gin.H{
+			"error": "Email tidak ditemukan, Pastikan email yang anda masukkan benar",
+		})
+		return
+	}
+	
+	if req.Otp == "" {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"error": "OTP tidak boleh kosong",
+		})
+		return
+	}
+	
+	if req.Otp != strconv.Itoa(m.UserOTP) {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"error": "OTP tidak valid",
+		})
+		return
+	}
+	
+	if req.NewPassword == "" {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"error": "Password baru tidak boleh kosong",
+		})
+		return
+	}
+	
+	if req.NewPassword != req.ConfirmPassword {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"error": "Password baru dan konfirmasi password tidak cocok",
+		})
+		return
+	}
+	
+	u.UpdateUserPassword(req.Email, req.NewPassword)
+	ctx.JSON(http.StatusOK, gin.H{
+		"message": "Password berhasil diubah",
+	})
+	
+	//testing
+	fmt.Println("hasil new password: ", u.FindUserByEmail(req.Email))
 }

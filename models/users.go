@@ -9,3 +9,4 @@ type User struct {
 
 var Users []User
 var CurrentID = 1
+var UserOTP int
